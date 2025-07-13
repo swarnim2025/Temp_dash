@@ -205,4 +205,5 @@ def update_genre_popup(clickData, close_clicks, current_style):
     return fig, updated_style
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run_server(debug=True, host='0.0.0.0', port=8080)
+
