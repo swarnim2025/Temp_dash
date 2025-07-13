@@ -31,3 +31,4 @@ Werkzeug==2.2.3
 zipp==3.16.2
 statsmodels==0.14.0
 gunicorn
+gdown
