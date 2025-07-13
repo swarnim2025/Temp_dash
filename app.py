@@ -6,18 +6,18 @@ import plotly.express as px
 from dash import Dash, html, dcc, Input, Output
 import pycountry
 
-# ---------- Download from Google Drive if not present ----------
-file_id = "1wdBTc8d5Rz9Mq6U_VUjPHHuTARYr9zsS"
-file_name = "tmdb_movies_countries.csv"
+# ---------- Download CSV if not present ----------
+file_id = "1m54be9Bt2KbxrUhZ4kOKm6xQn8CHbkm_"
+file_name = "tmdb_movies_countries_clean.csv"
 gdown_url = f"https://drive.google.com/uc?id={file_id}"
 
 if not os.path.exists(file_name):
     gdown.download(gdown_url, file_name, quiet=False)
 
-# ---------- Load already-cleaned dataset ----------
+# ---------- Load Dataset (Already Cleaned) ----------
 df = pd.read_csv(file_name)
 
-# ---------- Country name → ISO Alpha-3 code ----------
+# ---------- ISO Alpha-3 Mapping ----------
 def get_iso_alpha3_enhanced(country_name):
     manual_mapping = {
         'United States': 'USA', 'United States of America': 'USA',
@@ -42,10 +42,10 @@ def get_iso_alpha3_enhanced(country_name):
     except:
         return None
 
-# ---------- Group and summarize ----------
+# ---------- Summary ----------
 summary = df.groupby('production_countries').agg(movie_count=('title', 'count')).reset_index()
 summary['iso_alpha'] = summary['production_countries'].apply(get_iso_alpha3_enhanced)
-summary = summary.dropna(subset=['iso_alpha'])
+summary.dropna(subset=['iso_alpha'], inplace=True)
 summary['log_movie_count'] = np.log10(summary['movie_count'] + 1)
 
 # ---------- Dash App ----------
@@ -59,7 +59,7 @@ app.layout = html.Div([
 
 @app.callback(
     Output('choropleth', 'figure'),
-    Input('choropleth', 'clickData')
+    Input('choropleth', 'clickData')  # Trigger redraw
 )
 def display_map(_):
     fig = px.choropleth(
