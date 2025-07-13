@@ -14,17 +14,10 @@ gdown_url = f"https://drive.google.com/uc?id={file_id}"
 if not os.path.exists(file_name):
     gdown.download(gdown_url, file_name, quiet=False)
 
-# ---------- Load and clean dataset ----------
+# ---------- Load already-cleaned dataset ----------
 df = pd.read_csv(file_name)
-df = df[df['title'] != 'IPL 2025']
-df = df[df['production_countries'].notna()]
-df = df[df['production_countries'].str.strip() != '']
 
-df['production_countries'] = df['production_countries'].str.split(',\s*', regex=True)
-df = df.explode('production_countries')
-df['production_countries'] = df['production_countries'].str.strip()
-
-# Country name → ISO Alpha-3 code
+# ---------- Country name → ISO Alpha-3 code ----------
 def get_iso_alpha3_enhanced(country_name):
     manual_mapping = {
         'United States': 'USA', 'United States of America': 'USA',
@@ -49,7 +42,7 @@ def get_iso_alpha3_enhanced(country_name):
     except:
         return None
 
-# Group and summarize
+# ---------- Group and summarize ----------
 summary = df.groupby('production_countries').agg(movie_count=('title', 'count')).reset_index()
 summary['iso_alpha'] = summary['production_countries'].apply(get_iso_alpha3_enhanced)
 summary = summary.dropna(subset=['iso_alpha'])
@@ -66,7 +59,7 @@ app.layout = html.Div([
 
 @app.callback(
     Output('choropleth', 'figure'),
-    Input('choropleth', 'clickData')  # still required to trigger redraw
+    Input('choropleth', 'clickData')
 )
 def display_map(_):
     fig = px.choropleth(
